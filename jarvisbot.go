@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 var exchange_rate_bucket_name = []byte("rates")
 var group_usernames_bucket_name = []byte("groups")
 var file_cache_bucket_name = []byte("file_ids")
+var kiwi_mangle_bucket_name = []byte("kiwi_mangle")
 
 // JarvisBot is the main struct. All response funcs bind to this.
 type JarvisBot struct {
@@ -265,6 +267,10 @@ func createAllBuckets(db *bolt.DB) error {
 		if err != nil {
 			return err
 		}
+		_, err = tx.CreateBucketIfNotExists(kiwi_mangle_bucket_name)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 	return err
@@ -302,5 +308,40 @@ func (j *JarvisBot) parseMessage(msg *telebot.Message) *message {
 }
 
 func (j *JarvisBot) SendMessage(recipient telebot.Recipient, msg string, options *telebot.SendOptions) {
+	if shouldMangle, err := j.shouldKiwiMangle(recipient); shouldMangle {
+		if err != nil {
+			j.log.Printf("shouldKiwiMangle error: %s", err)
+		}
+		msg = Kiwiify(msg)
+	}
 	j.bot.SendMessage(recipient, msg, options)
+}
+
+func (j *JarvisBot) setShouldKiwiMangle(recipient telebot.Recipient, should bool) error {
+	err := j.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket(kiwi_mangle_bucket_name)
+		err := b.Put([]byte(recipient.Destination()), []byte(strconv.FormatBool(should)))
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	return err
+}
+
+func (j *JarvisBot) shouldKiwiMangle(recipient telebot.Recipient) (bool, error) {
+	should := true
+
+	err := j.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket(kiwi_mangle_bucket_name)
+		v := b.Get([]byte(recipient.Destination()))
+		var err error
+		should, err = strconv.ParseBool(string(v[:]))
+		return err
+	})
+	if err != nil {
+		return true, err
+	}
+
+	return should, nil
 }

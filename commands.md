@@ -1,14 +1,14 @@
 # List of commands provided to Botfather
 
-img - gets an image
-gif - gets a gif
-google - does a Google search
-xchg - does an exchange rate conversion
-youtube - does a Youtube search
-urbandict - does an Urban Dictionary search
-loc - does a location search
-clear - clears your NSFW images for you
-psi - returns the current PSI numbers
-ping - sends a group-wide notification
-pingsetup - setup group-wide notification
-echo - parrots stuff back at you
+img - gits en imege
+guf - gits a guf
+gugle - dues a Gugle siarch
+xchg - dues en ixchenge rete cunvirsuon
+yutube - dues a Yutube siarch
+urbenduct - dues en Urben Ductuonery siarch
+luc - dues a lucetiun siarch
+clir - cliars yur NSFW imegis fur yu
+psu - riturns the currint PSU numbirs
+pung - sinds a grup-wude nutificetiun
+pungsitup - situp grup-wude nutificetiun
+ichu - perruts stuff beck et yu
